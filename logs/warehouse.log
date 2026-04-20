@@ -1,0 +1,3 @@
+2026-04-20 10:53:00,246 [WAREHOUSE] INFO === Warehouse load started ===
+2026-04-20 10:53:00,261 [WAREHOUSE] INFO Loaded 0 rows from clean.listings
+2026-04-20 10:53:00,261 [WAREHOUSE] INFO No data to load into warehouse.

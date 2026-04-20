@@ -1,0 +1,71 @@
+version: "3.9"
+
+services:
+
+  db:
+    image: postgres:15
+    container_name: avito_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: avito_db
+      POSTGRES_USER: avito_user
+      POSTGRES_PASSWORD: avito_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U avito_user -d avito_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  scraper:
+    build: ./scraper
+    container_name: avito_scraper
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data 
+    command: python scrape.py
+
+  staging:
+    build: ./staging
+    container_name: avito_staging
+    depends_on:
+      scraper:
+        condition: service_completed_successfully
+    env_file: .env
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/data
+    command: python load_staging.py
+
+  clean:
+    build: ./clean
+    container_name: avito_clean
+    depends_on:
+      staging:
+        condition: service_completed_successfully
+    env_file: .env
+    volumes:
+      - ./logs:/app/logs
+    command: python clean_data.py
+
+  warehouse:
+    build: ./warehouse
+    container_name: avito_warehouse
+    depends_on:
+      clean:
+        condition: service_completed_successfully
+    env_file: .env
+    volumes:
+      - ./logs:/app/logs
+    command: python load_warehouse.py
+
+volumes:
+  pg_data:

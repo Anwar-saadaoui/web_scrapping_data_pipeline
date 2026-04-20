@@ -1,0 +1,6 @@
+2026-04-20 10:52:41,330 [SCRAPER] INFO === PLAYWRIGHT SCRAPER STARTED ===
+2026-04-20 10:52:41,778 [SCRAPER] INFO Opening: https://www.avito.ma/fr/maroc/appartements-_-villas/%C3%A0_vendre
+2026-04-20 10:52:54,167 [SCRAPER] INFO Raw elements found: 1654
+2026-04-20 10:52:57,562 [SCRAPER] INFO TOTAL SCRAPED: 165
+2026-04-20 10:52:57,571 [SCRAPER] INFO Saved → /app/data/scraped_raw.json
+2026-04-20 10:52:57,580 [SCRAPER] INFO === DONE ===
