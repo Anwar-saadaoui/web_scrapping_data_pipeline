@@ -6,156 +6,178 @@ from avito_spider.items import ListingItem
 
 log = logging.getLogger(__name__)
 
-START_URL = "https://www.avito.ma/fr/maroc/appartements-_-villas/%C3%A0_vendre"
-MAX_PAGES = 20
+CITY_URLS = [
+    "https://www.avito.ma/fr/casablanca/appartements-%C3%A0_vendre",
+    "https://www.avito.ma/fr/rabat/appartements-%C3%A0_vendre",
+    "https://www.avito.ma/fr/marrakech/appartements-%C3%A0_vendre",
+    "https://www.avito.ma/fr/tanger/appartements-%C3%A0_vendre",
+    "https://www.avito.ma/fr/agadir/appartements-%C3%A0_vendre",
+    "https://www.avito.ma/fr/fes/appartements-%C3%A0_vendre",
+]
+MAX_PAGES_PER_CITY = 5
+
+# Matches real ad URLs:  /fr/district/appartements/Title_12345678.htm
+AD_URL_RE = re.compile(r'/fr/[^/]+/appartements/.+_\d+\.htm$')
 
 
 class AvitoSpider(scrapy.Spider):
     name            = "avito"
     allowed_domains = ["avito.ma"]
-    start_urls      = [START_URL]
     pages_crawled   = 0
-
     custom_settings = {"FEEDS": {}}
 
+    def start_requests(self):
+        for url in CITY_URLS:
+            yield scrapy.Request(
+                url,
+                callback=self.parse,
+                meta={"page": 1, "base_url": url},
+                dont_filter=True,
+            )
+
+    # ──────────────────────────────────────────────────────────
     def parse(self, response):
         self.pages_crawled += 1
-        log.info(f"Parsing page {self.pages_crawled}: {response.url}")
+        page     = response.meta["page"]
+        base_url = response.meta["base_url"]
 
-        # ── Strategy: find all links that point to individual ad pages ──
-        # Avito individual ad URLs look like:
-        #   /fr/maroc/appartements/titre-de-annonce_123456.htm
-        # They always end in _<digits>.htm or similar
-        # We find all <a> whose href matches this pattern, then walk UP
-        # to the card container.
-
-        ad_links = response.xpath(
-            '//a[re:test(@href, "/fr/maroc/.+_\\d+\\.htm")]',
-            namespaces={"re": "http://exslt.org/regular-expressions"}
-        )
-
-        log.info(f"  Ad links found: {len(ad_links)}")
-
-        if not ad_links:
-            log.warning("No ad links found — dumping first 3000 chars:")
-            log.warning(response.text[:3000])
-            return
+        log.info(f"[page {page}] {response.url} — HTTP {response.status} — {len(response.text)} chars")
 
         scraped_at = datetime.now(timezone.utc).isoformat()
-        seen_urls  = set()
 
-        for link in ad_links:
-            href = link.attrib.get("href", "")
-            if not href.startswith("http"):
-                href = "https://www.avito.ma" + href
+        # ── Find every <a> that links to an individual ad ─────
+        # Real ad href looks like:
+        #   /fr/ain_chock/appartements/A_vendre_un_joli_57502425.htm
+        ad_anchors = [
+            a for a in response.css("a[href]")
+            if AD_URL_RE.search(a.attrib["href"])
+        ]
 
-            if href in seen_urls:
+        log.info(f"  Ad anchors found: {len(ad_anchors)}")
+
+        if not ad_anchors:
+            log.warning("  Zero anchors — dumping 2000 chars of HTML for debug:")
+            log.warning(response.text[:2000])
+
+        seen = set()
+        for anchor in ad_anchors:
+            href = anchor.attrib["href"]
+            if href in seen:
                 continue
-            seen_urls.add(href)
+            seen.add(href)
 
-            # Walk up to the card container (parent or grandparent of the <a>)
-            # We try: the <a> itself, its parent, grandparent — whichever has price info
-            card = link.xpath(
-                'ancestor::*[.//span[contains(text(),"DH") or contains(text(),"MAD")]][1]'
-            )
-            if not card:
-                card = link  # fallback: parse from the <a> itself
+            full_url = "https://www.avito.ma" + href if not href.startswith("http") else href
 
-            item = self._parse_card(card, href, scraped_at)
+            # Skip immoneuf.avito.ma links
+            if "immoneuf" in full_url:
+                continue
+
+            item = self._parse_anchor(anchor, full_url, scraped_at)
             if item:
                 yield item
 
-        # ── Pagination ────────────────────────────────────────────────
-        if self.pages_crawled < MAX_PAGES:
-            next_url = self._next_page(response)
-            if next_url and next_url not in (response.url,):
-                log.info(f"  → Next: {next_url}")
-                yield response.follow(next_url, callback=self.parse)
+        # ── Pagination ────────────────────────────────────────
+        if page < MAX_PAGES_PER_CITY:
+            next_page = page + 1
+            clean = re.sub(r'[?&]o=\d+', '', base_url).rstrip("&?")
+            sep   = "&" if "?" in clean else "?"
+            yield scrapy.Request(
+                f"{clean}{sep}o={next_page}",
+                callback=self.parse,
+                meta={"page": next_page, "base_url": base_url},
+                dont_filter=True,
+            )
 
-    # ─────────────────────────────────────────────────────────────────
-    def _parse_card(self, card, href: str, scraped_at: str):
+    # ──────────────────────────────────────────────────────────
+    def _parse_anchor(self, anchor, full_url: str, scraped_at: str):
+        """
+        Each listing <a> contains ALL data we need as text nodes.
+        Real example from the fetched HTML:
 
-        # --- Title: prefer the <a> title attr or the heading text ----
-        title = (
-            card.xpath('.//h2/text()').get()
-            or card.xpath('.//h3/text()').get()
-            or card.xpath('.//a/@title').get()
-            or card.xpath(
-                './/p[contains(@class,"title") or contains(@class,"Title")]'
-                '/text()'
-            ).get()
-            or card.xpath(
-                './/*[contains(@class,"title") or contains(@class,"Title")]'
-                '//text()'
-            ).get()
-        )
-        if not title:
-            return None
-        title = title.strip()[:500]
+          Appartements dans Casablanca, Aïn Chock
+          A vendre un joli appartement avec terrasse
+          2 chambre(s)  2 sdb(s)  117 m²  Étage 0
+          1 650 000 DH  9 171 DH / mois
+        """
+        texts = [t.strip() for t in anchor.css("::text").getall() if t.strip()]
+        full  = " ".join(texts)
 
-        # Skip footer / nav garbage
-        garbage_keywords = [
-            "moteur.ma", "avito group", "cookies", "newsletter",
-            "télécharger", "download", "facebook", "instagram",
-            "conditions", "contact", "aide", "help", "emploi"
-        ]
-        if any(kw in title.lower() for kw in garbage_keywords):
+        if not texts:
             return None
 
-        # --- Price -------------------------------------------------------
-        # Avito price pattern: "850 000 DH" — number and unit often split
-        # across sibling spans. Collect ALL text inside the card and find it.
-        all_texts = card.xpath('.//text()').getall()
-        all_texts = [t.strip() for t in all_texts if t.strip()]
-        full_text = " ".join(all_texts)
-
-        # Match "1 200 000 DH" or "850000 MAD" or "1,200,000 DH"
-        price_match = re.search(
-            r'([\d\s\u00a0,\.]{2,})\s*(DH|MAD|dh|mad)', full_text
+        # ── Location: "Appartements dans City, District" ──────
+        # Always appears as the FIRST meaningful text in the anchor
+        city_raw, district_raw = None, None
+        loc_match = re.search(
+            r'(?:Appartements?\s+dans\s+|Ventes?\s+dans\s+)'
+            r'([^,\n]+?)(?:,\s*(.+?))?(?:\s{2,}|$)',
+            full, re.IGNORECASE
         )
-        price_raw = price_match.group(0).strip() if price_match else None
-
-        if not price_raw:
-            return None
-
-        # --- Location ----------------------------------------------------
-        # Try explicit location elements first
-        location_raw = (
-            card.xpath(
-                './/*[contains(@class,"location") or contains(@class,"Location")'
-                '  or contains(@class,"city")     or contains(@class,"City")'
-                '  or contains(@class,"region")   or contains(@class,"address")]'
-                '//text()'
-            ).getall()
-        )
-
-        # Fallback: look for text that contains a known Moroccan city name
-        if not location_raw:
-            moroccan_cities = [
-                "Casablanca","Rabat","Marrakech","Fès","Tanger","Agadir",
-                "Meknès","Oujda","Kénitra","Tétouan","Salé","Mohammedia",
-                "El Jadida","Safi","Beni Mellal","Settat","Nador","Khouribga",
-                "Kenitra","Meknes","Fes","Casa"
-            ]
-            pattern = "|".join(moroccan_cities)
-            for t in all_texts:
-                if re.search(pattern, t, re.IGNORECASE) and len(t) < 80:
-                    location_raw = [t]
+        if loc_match:
+            city_raw     = loc_match.group(1).strip()
+            district_raw = loc_match.group(2).strip() if loc_match.group(2) else None
+        else:
+            # Fallback: find known city name in texts
+            for t in texts:
+                m = re.search(
+                    r'\b(Casablanca|Rabat|Marrakech|Tanger|Agadir|'
+                    r'Fès|Fes|Meknès|Meknes|Oujda|Kénitra|Kenitra|'
+                    r'Tétouan|Tetouan|Salé|Sale|Mohammedia|El Jadida|'
+                    r'Safi|Beni Mellal|Settat|Nador|Khouribga)\b',
+                    t, re.IGNORECASE
+                )
+                if m:
+                    city_raw = m.group(1)
+                    rest = t[m.end():].strip().lstrip(",").strip()
+                    district_raw = rest if rest else None
                     break
 
-        location_str = " ".join(t.strip() for t in location_raw if t.strip())
-        city_raw, district_raw = self._split_location(location_str)
+        # ── Title ─────────────────────────────────────────────
+        # Title is a text node that is NOT location, NOT price, NOT features
+        title = None
+        garbage_re = re.compile(
+            r'chambre|sdb|m²|étage|DH|MAD|mois|Appartements?\s+dans|'
+            r'Ventes?\s+dans|Premium|Vérifié|Visiter|il y a|immoneuf',
+            re.IGNORECASE
+        )
+        for t in texts:
+            if not garbage_re.search(t) and len(t) > 8:
+                title = t[:500]
+                break
 
-        # --- Features from all text nodes --------------------------------
-        area_raw       = self._find_feature(all_texts, r'\d[\d\s]*\s*m²?')
-        rooms_raw      = self._find_feature(all_texts, r'\d+\s*(pièces?|pieces?|chambres?|rooms?)', re.IGNORECASE)
-        bathrooms_raw  = self._find_feature(all_texts, r'\d+\s*(salles?\s*de\s*bain|sdbs?|bains?|douches?|bathrooms?)', re.IGNORECASE)
-        floor_raw      = self._find_feature(all_texts, r'\d+\s*(étages?|etages?|floors?)', re.IGNORECASE)
-        year_built_raw = self._find_feature(all_texts, r'\b(19[5-9]\d|20[0-2]\d)\b')
+        if not title:
+            # Use last part of URL as title
+            title = full_url.split("/")[-1].replace("_", " ").replace(".htm", "")[:500]
 
-        # Exclude copyright year "2012-2026" from year_built
-        if year_built_raw and "avito" in year_built_raw.lower():
-            year_built_raw = None
+        # ── Price: "1 650 000 DH" ─────────────────────────────
+        price_match = re.search(r'([\d\s\u00a0]+)\s*DH', full)
+        if not price_match:
+            return None   # no price = not a real listing
+        price_raw = price_match.group(0).strip()
+
+        # ── Area: "117 m²" ────────────────────────────────────
+        area_match = re.search(r'(\d[\d\s]*)\s*m²', full)
+        area_raw   = area_match.group(0).strip() if area_match else None
+
+        # ── Rooms: "2 chambre(s)" ─────────────────────────────
+        rooms_match = re.search(r'(\d+)\s*chambre', full, re.IGNORECASE)
+        rooms_raw   = rooms_match.group(0).strip() if rooms_match else None
+
+        # ── Bathrooms: "2 sdb(s)" ─────────────────────────────
+        bath_match    = re.search(r'(\d+)\s*sdb', full, re.IGNORECASE)
+        bathrooms_raw = bath_match.group(0).strip() if bath_match else None
+
+        # ── Floor: "Étage 4" ──────────────────────────────────
+        floor_match = re.search(r'[EÉ]tage\s*(\d+)', full, re.IGNORECASE)
+        floor_raw   = floor_match.group(0).strip() if floor_match else None
+
+        # ── Year built: not on listing cards, will be None ────
+        year_built_raw = None
+
+        log.debug(
+            f"  ITEM title={title!r} price={price_raw!r} "
+            f"city={city_raw!r} area={area_raw!r} rooms={rooms_raw!r}"
+        )
 
         return ListingItem(
             title          = title,
@@ -167,43 +189,6 @@ class AvitoSpider(scrapy.Spider):
             bathrooms_raw  = bathrooms_raw,
             floor_raw      = floor_raw,
             year_built_raw = year_built_raw,
-            ad_url         = href,
+            ad_url         = full_url,
             scraped_at     = scraped_at,
         )
-
-    # ─────────────────────────────────────────────────────────────────
-    @staticmethod
-    def _split_location(raw: str):
-        if not raw:
-            return None, None
-        raw = raw.replace(" – ", ",").replace(" - ", ",")
-        parts = [p.strip() for p in raw.split(",") if p.strip()]
-        return (parts[0] if parts else None), (parts[1] if len(parts) > 1 else None)
-
-    @staticmethod
-    def _find_feature(texts: list, pattern: str, flags=0) -> str | None:
-        for t in texts:
-            if re.search(pattern, t, flags):
-                return t[:200]
-        return None
-
-    @staticmethod
-    def _next_page(response) -> str | None:
-        # 1. Explicit rel="next"
-        nxt = (
-            response.xpath('//a[@rel="next"]/@href').get()
-            or response.xpath(
-                '//a[contains(@aria-label,"Suivant") or contains(@aria-label,"next")'
-                '  or contains(text(),"Suivant") or contains(text(),"›")]/@href'
-            ).get()
-        )
-        if nxt:
-            return response.urljoin(nxt)
-
-        # 2. Build ?o=N from current URL
-        match = re.search(r'[?&]o=(\d+)', response.url)
-        current_page = int(match.group(1)) if match else 1
-        next_num = current_page + 1
-        base = re.sub(r'([?&])o=\d+', '', response.url).rstrip("&?")
-        sep  = "&" if "?" in base else "?"
-        return f"{base}{sep}o={next_num}"

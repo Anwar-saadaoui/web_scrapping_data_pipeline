@@ -80,6 +80,7 @@ class PostgresPipeline:
         except Exception as e:
             log.warning(f"DB insert error: {e}")
             self.conn.rollback()
+        log.info(f"INSERTING: {item['title']}")
         return item
 
 

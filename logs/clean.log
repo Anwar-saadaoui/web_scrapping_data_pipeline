@@ -1,3 +1,13 @@
-2026-04-20 13:17:23,311 [CLEAN] INFO === Cleaning started ===
-2026-04-20 13:17:23,328 [CLEAN] INFO Fetched 0 rows from staging
-2026-04-20 13:17:23,329 [CLEAN] INFO Nothing to clean.
+2026-04-20 14:11:37,012 [CLEAN] INFO === Cleaning started ===
+2026-04-20 14:11:37,035 [CLEAN] INFO Fetched 0 rows from staging
+2026-04-20 14:11:37,035 [CLEAN] INFO Nothing to clean.
+2026-04-20 14:17:55,278 [CLEAN] INFO === Cleaning started ===
+2026-04-20 14:17:55,299 [CLEAN] INFO Fetched 0 rows from staging
+2026-04-20 14:17:55,300 [CLEAN] INFO Nothing to clean.
+2026-04-20 14:27:45,236 [CLEAN] INFO === Cleaning started ===
+2026-04-20 14:27:45,258 [CLEAN] INFO Fetched 919 rows from staging
+2026-04-20 14:27:45,273 [CLEAN] INFO Outlier removal on 'price': 26 → 22 rows
+2026-04-20 14:27:45,275 [CLEAN] INFO Outlier removal on 'area_m2': 18 → 18 rows
+2026-04-20 14:27:45,276 [CLEAN] INFO Clean rows ready: 18
+2026-04-20 14:27:45,296 [CLEAN] INFO Inserted/updated 18 rows in clean.listings
+2026-04-20 14:27:45,296 [CLEAN] INFO === Cleaning done ===
