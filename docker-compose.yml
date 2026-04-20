@@ -30,8 +30,8 @@ services:
     env_file: .env
     volumes:
       - ./logs:/app/logs
-      - ./data:/app/data 
-    command: python scrape.py
+      - scraper_output:/app/output
+    command: scrapy crawl avito
 
   staging:
     build: ./staging
@@ -42,7 +42,7 @@ services:
     env_file: .env
     volumes:
       - ./logs:/app/logs
-      - ./data:/data
+      - scraper_output:/data
     command: python load_staging.py
 
   clean:
@@ -69,3 +69,4 @@ services:
 
 volumes:
   pg_data:
+  scraper_output:
