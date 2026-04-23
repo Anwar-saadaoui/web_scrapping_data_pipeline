@@ -1,13 +1,9 @@
-2026-04-20 14:11:37,012 [CLEAN] INFO === Cleaning started ===
-2026-04-20 14:11:37,035 [CLEAN] INFO Fetched 0 rows from staging
-2026-04-20 14:11:37,035 [CLEAN] INFO Nothing to clean.
-2026-04-20 14:17:55,278 [CLEAN] INFO === Cleaning started ===
-2026-04-20 14:17:55,299 [CLEAN] INFO Fetched 0 rows from staging
-2026-04-20 14:17:55,300 [CLEAN] INFO Nothing to clean.
-2026-04-20 14:27:45,236 [CLEAN] INFO === Cleaning started ===
-2026-04-20 14:27:45,258 [CLEAN] INFO Fetched 919 rows from staging
-2026-04-20 14:27:45,273 [CLEAN] INFO Outlier removal on 'price': 26 → 22 rows
-2026-04-20 14:27:45,275 [CLEAN] INFO Outlier removal on 'area_m2': 18 → 18 rows
-2026-04-20 14:27:45,276 [CLEAN] INFO Clean rows ready: 18
-2026-04-20 14:27:45,296 [CLEAN] INFO Inserted/updated 18 rows in clean.listings
-2026-04-20 14:27:45,296 [CLEAN] INFO === Cleaning done ===
+2026-04-23 11:34:50,931 [CLEAN] INFO === CLEANING START ===
+2026-04-23 11:34:51,100 [CLEAN] INFO Loaded 1800 raw rows
+2026-04-23 11:34:51,116 [CLEAN] INFO After dedup: 1800
+2026-04-23 11:34:51,122 [CLEAN] INFO After price filter: 1800
+2026-04-23 11:34:51,126 [CLEAN] INFO [OUTLIERS] price: 1800 → 1798
+2026-04-23 11:34:51,129 [CLEAN] INFO [OUTLIERS] area_m2: 1798 → 1777
+2026-04-23 11:34:51,130 [CLEAN] INFO Final clean dataset: 1777 rows
+2026-04-23 11:34:51,497 [CLEAN] INFO Inserted: 1777 rows
+2026-04-23 11:34:51,498 [CLEAN] INFO === CLEANING DONE ===

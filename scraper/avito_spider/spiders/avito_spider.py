@@ -14,9 +14,8 @@ CITY_URLS = [
     "https://www.avito.ma/fr/agadir/appartements-%C3%A0_vendre",
     "https://www.avito.ma/fr/fes/appartements-%C3%A0_vendre",
 ]
-MAX_PAGES_PER_CITY = 5
+MAX_PAGES_PER_CITY = 10
 
-# Matches real ad URLs:  /fr/district/appartements/Title_12345678.htm
 AD_URL_RE = re.compile(r'/fr/[^/]+/appartements/.+_\d+\.htm$')
 
 
@@ -45,7 +44,7 @@ class AvitoSpider(scrapy.Spider):
 
         scraped_at = datetime.now(timezone.utc).isoformat()
 
-        # ── Find every <a> that links to an individual ad ─────
+        # Find every <a> that links to an individual ad 
         # Real ad href looks like:
         #   /fr/ain_chock/appartements/A_vendre_un_joli_57502425.htm
         ad_anchors = [
@@ -55,7 +54,7 @@ class AvitoSpider(scrapy.Spider):
 
         log.info(f"  Ad anchors found: {len(ad_anchors)}")
 
-        if not ad_anchors:
+        if not ad_anchors: 
             log.warning("  Zero anchors — dumping 2000 chars of HTML for debug:")
             log.warning(response.text[:2000])
 
@@ -132,7 +131,7 @@ class AvitoSpider(scrapy.Spider):
                     district_raw = rest if rest else None
                     break
 
-        # ── Title ─────────────────────────────────────────────
+        # ── Title
         # Title is a text node that is NOT location, NOT price, NOT features
         title = None
         garbage_re = re.compile(

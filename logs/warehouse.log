@@ -1,15 +1,9 @@
-2026-04-20 14:11:38,147 [WAREHOUSE] INFO === Warehouse load started ===
-2026-04-20 14:11:38,162 [WAREHOUSE] INFO Loaded 0 rows from clean.listings
-2026-04-20 14:11:38,163 [WAREHOUSE] INFO No data to load into warehouse.
-2026-04-20 14:17:56,432 [WAREHOUSE] INFO === Warehouse load started ===
-2026-04-20 14:17:56,451 [WAREHOUSE] INFO Loaded 0 rows from clean.listings
-2026-04-20 14:17:56,451 [WAREHOUSE] INFO No data to load into warehouse.
-2026-04-20 14:27:46,322 [WAREHOUSE] INFO === Warehouse load started ===
-2026-04-20 14:27:46,337 [WAREHOUSE] INFO Loaded 18 rows from clean.listings
-2026-04-20 14:27:46,371 [WAREHOUSE] INFO   bi_schema.fact_announcement: 18 rows
-2026-04-20 14:27:46,372 [WAREHOUSE] INFO   bi_schema.dim_localisation: 18 rows
-2026-04-20 14:27:46,373 [WAREHOUSE] INFO   bi_schema.dim_property: 18 rows
-2026-04-20 14:27:46,373 [WAREHOUSE] INFO   bi_schema.dim_time: 18 rows
-2026-04-20 14:27:46,374 [WAREHOUSE] INFO   ml_schema.feature_store: 18 rows
-2026-04-20 14:27:46,374 [WAREHOUSE] INFO Fact rows: 18 | ML rows: 18
-2026-04-20 14:27:46,375 [WAREHOUSE] INFO === Warehouse load done ===
+2026-04-23 11:34:52,400 [WAREHOUSE] INFO === Warehouse load started ===
+2026-04-23 11:34:52,435 [WAREHOUSE] INFO Loaded 1777 rows from clean.listings
+2026-04-23 11:34:53,418 [WAREHOUSE] INFO   bi_schema.fact_announcement: 1777 rows
+2026-04-23 11:34:53,419 [WAREHOUSE] INFO   bi_schema.dim_localisation: 1777 rows
+2026-04-23 11:34:53,420 [WAREHOUSE] INFO   bi_schema.dim_property: 1777 rows
+2026-04-23 11:34:53,421 [WAREHOUSE] INFO   bi_schema.dim_time: 1777 rows
+2026-04-23 11:34:53,422 [WAREHOUSE] INFO   ml_schema.feature_store: 1777 rows
+2026-04-23 11:34:53,423 [WAREHOUSE] INFO Fact rows: 1777 | ML rows: 1777
+2026-04-23 11:34:53,423 [WAREHOUSE] INFO === Warehouse load done ===
