@@ -16,13 +16,21 @@ CITY_URLS = [
 ]
 MAX_PAGES_PER_CITY = 10
 
+#“Only keep links that look like real apartment ads”
 AD_URL_RE = re.compile(r'/fr/[^/]+/appartements/.+_\d+\.htm$')
 
 
 class AvitoSpider(scrapy.Spider):
-    name            = "avito"
+    name = "avito"
     allowed_domains = ["avito.ma"]
-    pages_crawled   = 0
+    pages_crawled = 0
+    #This disables Scrapy’s default output system.
+    """
+    Normally Scrapy might auto-save:
+    output.json
+👉 Here you’re saying:
+    “Don’t auto-save anything (I’ll handle it myself)”
+    """
     custom_settings = {"FEEDS": {}}
 
     def start_requests(self):
@@ -30,6 +38,9 @@ class AvitoSpider(scrapy.Spider):
             yield scrapy.Request(
                 url,
                 callback=self.parse,
+                # meta: dictionary used to pass custom data (like page number, base URL)
+                # along with the request. This data is available later in the response
+                # via response.meta and helps track things like pagination or context.
                 meta={"page": 1, "base_url": url},
                 dont_filter=True,
             )
@@ -37,16 +48,14 @@ class AvitoSpider(scrapy.Spider):
     # ──────────────────────────────────────────────────────────
     def parse(self, response):
         self.pages_crawled += 1
-        page     = response.meta["page"]
+        page = response.meta["page"]
         base_url = response.meta["base_url"]
 
         log.info(f"[page {page}] {response.url} — HTTP {response.status} — {len(response.text)} chars")
 
         scraped_at = datetime.now(timezone.utc).isoformat()
 
-        # Find every <a> that links to an individual ad 
-        # Real ad href looks like:
-        #   /fr/ain_chock/appartements/A_vendre_un_joli_57502425.htm
+       
         ad_anchors = [
             a for a in response.css("a[href]")
             if AD_URL_RE.search(a.attrib["href"])
@@ -54,7 +63,7 @@ class AvitoSpider(scrapy.Spider):
 
         log.info(f"  Ad anchors found: {len(ad_anchors)}")
 
-        if not ad_anchors: 
+        if not ad_anchors:
             log.warning("  Zero anchors — dumping 2000 chars of HTML for debug:")
             log.warning(response.text[:2000])
 

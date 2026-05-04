@@ -67,6 +67,29 @@ services:
       - ./logs:/app/logs
     command: python load_warehouse.py
 
+
+  ml_train:
+    build: ./ml
+    container_name: avito_ml_train
+    depends_on:
+      warehouse:
+        condition: service_completed_successfully
+    env_file: .env
+    volumes:
+      - ./ml/outputs:/app/outputs
+    command: python train.py
+
+  ml_api:
+    build: ./ml/api
+    container_name: avito_ml_api
+    depends_on:
+      ml_train:
+        condition: service_completed_successfully
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ml/outputs:/models
+
 volumes:
   pg_data:
   scraper_output:

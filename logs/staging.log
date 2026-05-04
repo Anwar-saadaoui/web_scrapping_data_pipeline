@@ -2,3 +2,15 @@
 2026-04-23 11:34:49,264 [STAGING] INFO Loaded 1931 records from JSON
 2026-04-23 11:34:49,681 [STAGING] INFO Inserted: 0 | Skipped (dup): 1931
 2026-04-23 11:34:49,682 [STAGING] INFO === Staging load done ===
+2026-04-29 13:31:53,752 [STAGING] INFO === Staging load started ===
+2026-04-29 13:31:53,762 [STAGING] INFO Loaded 1950 records from JSON
+2026-04-29 13:31:53,932 [STAGING] INFO Inserted: 0 | Skipped (dup): 1950
+2026-04-29 13:31:53,932 [STAGING] INFO === Staging load done ===
+2026-04-30 13:23:28,986 [STAGING] INFO === Staging load started ===
+2026-04-30 13:23:28,997 [STAGING] INFO Loaded 1958 records from JSON
+2026-04-30 13:23:29,188 [STAGING] INFO Inserted: 0 | Skipped (dup): 1958
+2026-04-30 13:23:29,189 [STAGING] INFO === Staging load done ===
+2026-05-04 08:43:58,536 [STAGING] INFO === Staging load started ===
+2026-05-04 08:43:58,545 [STAGING] INFO Loaded 1965 records from JSON
+2026-05-04 08:43:58,715 [STAGING] INFO Inserted: 0 | Skipped (dup): 1965
+2026-05-04 08:43:58,716 [STAGING] INFO === Staging load done ===

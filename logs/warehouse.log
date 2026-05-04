@@ -6,4 +6,30 @@
 2026-04-23 11:34:53,421 [WAREHOUSE] INFO   bi_schema.dim_time: 1777 rows
 2026-04-23 11:34:53,422 [WAREHOUSE] INFO   ml_schema.feature_store: 1777 rows
 2026-04-23 11:34:53,423 [WAREHOUSE] INFO Fact rows: 1777 | ML rows: 1777
-2026-04-23 11:34:53,423 [WAREHOUSE] INFO === Warehouse load done ===
+2026-04-23 11:34:53,423 [WAREHOUSE] INFO === Warehouse load done ===2026-04-29 13:31:55,961 [WAREHOUSE] INFO === Warehouse load started ===
+2026-04-29 13:31:55,987 [WAREHOUSE] INFO Loaded 2347 rows from clean.listings
+2026-04-29 13:31:57,358 [WAREHOUSE] INFO   bi_schema.fact_announcement: 2347 rows
+2026-04-29 13:31:57,360 [WAREHOUSE] INFO   bi_schema.dim_localisation: 4124 rows
+2026-04-29 13:31:57,361 [WAREHOUSE] INFO   bi_schema.dim_property: 4124 rows
+2026-04-29 13:31:57,362 [WAREHOUSE] INFO   bi_schema.dim_time: 4124 rows
+2026-04-29 13:31:57,363 [WAREHOUSE] INFO   ml_schema.feature_store: 2347 rows
+2026-04-29 13:31:57,363 [WAREHOUSE] INFO Fact rows: 2347 | ML rows: 2347
+2026-04-29 13:31:57,364 [WAREHOUSE] INFO === Warehouse load done ===
+2026-04-30 13:23:31,388 [WAREHOUSE] INFO === Warehouse load started ===
+2026-04-30 13:23:31,424 [WAREHOUSE] INFO Loaded 2503 rows from clean.listings
+2026-04-30 13:23:33,143 [WAREHOUSE] INFO   bi_schema.fact_announcement: 2503 rows
+2026-04-30 13:23:33,146 [WAREHOUSE] INFO   bi_schema.dim_localisation: 6627 rows
+2026-04-30 13:23:33,147 [WAREHOUSE] INFO   bi_schema.dim_property: 6627 rows
+2026-04-30 13:23:33,149 [WAREHOUSE] INFO   bi_schema.dim_time: 6627 rows
+2026-04-30 13:23:33,150 [WAREHOUSE] INFO   ml_schema.feature_store: 2503 rows
+2026-04-30 13:23:33,151 [WAREHOUSE] INFO Fact rows: 2503 | ML rows: 2503
+2026-04-30 13:23:33,151 [WAREHOUSE] INFO === Warehouse load done ===
+2026-05-04 08:44:00,715 [WAREHOUSE] INFO === Warehouse load started ===
+2026-05-04 08:44:00,745 [WAREHOUSE] INFO Loaded 2818 rows from clean.listings
+2026-05-04 08:44:02,345 [WAREHOUSE] INFO   bi_schema.fact_announcement: 2818 rows
+2026-05-04 08:44:02,347 [WAREHOUSE] INFO   bi_schema.dim_localisation: 9445 rows
+2026-05-04 08:44:02,348 [WAREHOUSE] INFO   bi_schema.dim_property: 9445 rows
+2026-05-04 08:44:02,350 [WAREHOUSE] INFO   bi_schema.dim_time: 9445 rows
+2026-05-04 08:44:02,351 [WAREHOUSE] INFO   ml_schema.feature_store: 2818 rows
+2026-05-04 08:44:02,351 [WAREHOUSE] INFO Fact rows: 2818 | ML rows: 2818
+2026-05-04 08:44:02,351 [WAREHOUSE] INFO === Warehouse load done ===
