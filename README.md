@@ -442,5 +442,6 @@ GROUP BY l.city ORDER BY avg_price_m2 DESC;
 ```
 
 ---
+[Dashboard github Link](https://github.com/Anwar-saadaoui/power_bi_dashboard.git)
 
 *Built with ❤️ — Scrapy · PostgreSQL · Docker · FastAPI · XGBoost · Next.js*
